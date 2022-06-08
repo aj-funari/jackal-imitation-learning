@@ -2,7 +2,6 @@
 
 import torch
 import rospy
-from yaml import parse
 from geometry_msgs.msg import Twist # message type for cmd_vel
 from sensor_msgs.msg import Image # message type for image
 from cv_bridge import CvBridge, CvBridgeError
@@ -15,7 +14,10 @@ move = Twist()
 
 img_channels = 3
 num_classes = 2
-PATH = '/home/aj/catkin_ws/src/models/ResNet50.pt'
+ResNet50 = ResNet(block, [3,4,6,3], img_channels, num_classes)
+
+### MODEL PATH
+PATH = '/home/aj/catkin_ws/src/models/forest+hallway_ResNet50_lr_0.002_loss_weight_decay_0.5148.pt'
 
 ### LOAD MODEL
 model = ResNet(block, [3,4,6,3], img_channels, num_classes)
@@ -39,19 +41,14 @@ class data_recorder(object):
     def left_img_callback(self, image):
         # print("I recieved an image!")
         try:
-            # Convert ROS Image message to OpenCV2
+            # convert ROS Image message to OpenCV2
             cv2_img = bridge.imgmsg_to_cv2(image, desired_encoding='rgb8')  # returns array
 
-            # Feed image through neural network
+            # resize image 
             img_resize = setup.resize(cv2_img)
             img_tensor = torch.from_numpy(img_resize)
             img = img_tensor.reshape(1, 3, 224, 224)
             
-            # move model/image to gpu 
-            # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-            # ResNet50.to(device)
-            # img = img.to(device)
-
             # feed image through neural network
             tensor_out = model(img)
             self.tensor_x_z_actions.append(tensor_out)

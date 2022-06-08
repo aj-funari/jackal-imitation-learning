@@ -10,15 +10,16 @@ class parse_data():
     def __init__(self):
         self.trainloader = []
         self.training_label = []
-        self.batch_epoch = []
-        self.label_epoch = []
+        self.rand_batch_epoch = []
+        self.rand_label_epoch = []
         self.batch_size = 0
 
     def parse_images(self):
-        DATADIR = '/home/aj/catkin_ws/src/images'
+        DATADIR = '/home/aj/catkin_ws/src/forest+hallway_images'
 
-        print("-------------------------------------")
+        print("----------------------------------")
         print("SETTING UP DATA FOR NEURAL NETWORK")
+        print("----------------------------------")
 
         for img in os.listdir(DATADIR):
             try:
@@ -32,7 +33,7 @@ class parse_data():
                 pass
 
     def parse_labels(self):
-        DATADIR = '/home/aj/catkin_ws/src/images'
+        DATADIR = '/home/aj/catkin_ws/src/forest+hallway_images'
         count = 0
 
         for label in os.listdir(DATADIR):
@@ -59,8 +60,6 @@ class parse_data():
             self.training_label.append(action)
             count += 1
 
-        print("\ntotal images:", count)
-
     def resize(self, img): # image input size = 768x1024
         # plt.imshow(img)
         # plt.show()
@@ -68,43 +67,42 @@ class parse_data():
         img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
         return(img)
 
-    def rand_batches_labels (self, num_batch):
+    def randomize_data (self, num_batch):
         self.batch_size = int(len(self.trainloader) / num_batch)
         batches_tmp = []
         labels_tmp = []
-        rand_start = 0
-        rand_end = self.batch_size
+        start = 0
+        end = self.batch_size 
         check_rand_num = {}
  
-        for i in range(num_batch):
-            for j in range(self.batch_size):
-                while len(check_rand_num) < self.batch_size:
-                    x = random.randrange(rand_start, rand_end)
+        for i in range(num_batch):  # for each batch
+            check_rand_num.clear()  # clear list for random generated numbers
+            for j in range(self.batch_size):  # for each image
+                while len(check_rand_num) < self.batch_size: 
+                    x = random.randrange(start, end)
                     if x not in check_rand_num.keys():  # if random number is not in dictorary, add random image
                         check_rand_num[x] = x # add num to check rand num list 
                         batches_tmp.append(self.trainloader[x])  # append imgage to temporary list
                         labels_tmp.append(self.training_label[x]) # append label to temporary list
+                        # print(check_rand_num)
             
-            rand_start += self.batch_size
-            rand_end += self.batch_size
+            start += self.batch_size
+            end += self.batch_size
             
             ### ADD BATCHES OF IMAGES TOGETHER
-            self.batch_epoch += batches_tmp
+            self.rand_batch_epoch += batches_tmp
             batches_tmp.clear()  # clear temporary list for next batch
 
             ### ADD BATCHES OF LABELS TOGETHER
-            self.label_epoch += labels_tmp
+            self.rand_label_epoch += labels_tmp
             labels_tmp.clear()
 
-            ### CLEAR CHECK RAND NUM LIST
-            check_rand_num.clear()  # clear the dictionary for next batch
-
-
         ###  PRINT INFORMATION
-        print("\nnumber of batches:", num_batch)
-        print("size of each batch in batch epoch:", self.batch_size)
-        print("size of batch epoch:", len(self.batch_epoch))
-        print("-------------------------------------")  
+        print("\n-----------------------------------")
+        print("Number of batches:", num_batch)
+        print("Size of batches in batch epoch:", self.batch_size)
+        print("Total images:", len(self.rand_batch_epoch))
+        print("-----------------------------------\n")  
 
 if __name__ == "__main__":
     ### CREATE CLASS INSTANCE
@@ -114,17 +112,5 @@ if __name__ == "__main__":
     DATA.parse_images()
     DATA.parse_labels()
 
-    ### NUMBER OF IMAGES
-    count = 0
-    for i in DATA.trainloader:
-        count += 1
-    print("number of images: ", count)
-
-    ### NUMBER OF LABELS
-    count = 0
-    for label in DATA.training_label:
-        count += 1
-    print("number of labels: ", count)
-
-    ### BATCHES
-    DATA.rand_batches_labels(10)
+    ### RANDOMIZE IMAGES
+    DATA.randomize_data(25)

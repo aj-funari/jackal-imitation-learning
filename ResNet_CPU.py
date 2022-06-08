@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import os
 import time
 import torch
 import torch.nn as nn
@@ -146,24 +145,16 @@ if __name__ == '__main__':
     DATA.parse_images()
     DATA.parse_labels()
 
-    ### NUMBER OF IMAGES
-    count = 0
-    for i in DATA.trainloader:
-        count += 1
-    print("number of images: ", count)
-
-    ### NUMBER OF LABELS
-    count = 0
-    for label in DATA.training_label:
-        count += 1
-    print("number of labels: ", count)
-
-    ### BATCHES
-    DATA.rand_batches_labels(15)
+    ### RANDOMIZE BATCHES
+    print("\n------------------------")
+    print("Enter number of batches: ")
+    number = int(input())
+    print("------------------------")
+    DATA.randomize_data(number)
 
     # ### CALL MODEL
     learning_rate = 0.002
-    weight_decay = 0.001
+    weight_decay = 0.0015
 
     net = ResNet50(img_channels=3, num_classes=2)
     optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate, weight_decay=weight_decay)
@@ -175,24 +166,22 @@ if __name__ == '__main__':
     z_accuracy = 0
     total_loss = 0
 
-    for input_batch in DATA.batch_epoch:  # loop through 10 batches in epoch
-        for image in input_batch:   # for each image in batch
+    for input_batch in DATA.rand_batch_epoch:  # loop through randomized epochs
+        for image in input_batch:   # for each image in epoch
             total_time = time.time()
             start_time = time.time()
             image = image.reshape(1, 3, 224, 224)
             
-            ### FEED IMAGE THROUGH NEURAL NETWORK
+            ### FEED IMAGE THROUGH NEURAL NETWORK --> USES NOT RANDOMIZED LIST FIX!!!
             output = net(image)
 
-            if DATA.training_label[x][0] != "" and DATA.training_label[x][1] != "":
+            ### CHECK LIST IS NOT EMPTY
+            if DATA.rand_label_epoch[x][0] != "" and DATA.rand_label_epoch[x][1] != "":
                
-                x_target = float(DATA.training_label[x][0])
-                x_target = torch.as_tensor(x_target)
-                z_target = float(DATA.training_label[x][1])
-                z_target = torch.as_tensor(z_target)
-
-                x_target = torch.as_tensor(float(DATA.training_label[x][0]))
-                z_target = torch.as_tensor(float(DATA.training_label[x][1]))
+                ### CONVERT X-Z ACTIONS TO TENSORS
+                x_target = torch.as_tensor(float(DATA.rand_label_epoch[x][0]))
+                z_target = torch.as_tensor(float(DATA.rand_label_epoch[x][1]))
+                print(x_target, z_target)
 
             ### MEAN SQUARED ERROR
             x_mae_loss = nn.L1Loss()
@@ -209,9 +198,12 @@ if __name__ == '__main__':
             ### CALCULATING TOTAL LOSS
             total_loss += float(loss)
 
-            ### PRINTING TRAINING TIME OF NEURAL NETWORK
+            ### REPORT INFORMATION EACH BATCH
             x += 1
             if x == DATA.batch_size:
+                # SAVE LOSS FOR FILENAME
+                filename_loss = total_loss/DATA.batch_size
+
                 print("--------------------------------")
                 print("BATCH #", num)
                 print("RUMTIME #", time.time() - start_time)
@@ -228,15 +220,10 @@ if __name__ == '__main__':
                 z_accuracy = 0
                 total_loss = 0
 
-    print("FINISHED TRAINING NEURAL NETWORK!")
+    # print("FINISHED TRAINING NEURAL NETWORK!")
 
-    PATH = '/home/aj/catkin_ws/src/models/ResNet50_lr_0.002_loss_'
+    PATH = '/home/aj/catkin_ws/src/models/forest+hallway_ResNet50_lr_0.002_wd_0.0015_loss_' + str(filename_loss) + '.pt'
     torch.save(net.state_dict(), PATH)
-    print("\nMODEL SAVED!")
-
-    '''
-    Remember that you must call model.evel() to set the 
-    dropout and batch normalization layers to evaluation
-    mode before running interference. Failing to do this
-    will yield inconsistent interference. 
-    '''
+    print("------------")
+    print("MODEL SAVED!")
+    print("------------")
