@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist # message type for cmd_vel
 from sensor_msgs.msg import Image # message type for image
-from ResNet_CPU import ResNet, block 
+from ResNet import ResNet, block 
 
 bridge = CvBridge()
 move = Twist()

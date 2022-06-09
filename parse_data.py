@@ -15,7 +15,7 @@ class parse_data():
         self.batch_size = 0
 
     def parse_images(self):
-        DATADIR = '/home/aj/catkin_ws/src/forest+hallway_images'
+        DATADIR = '/home/aj/catkin_ws/src/images/forest_1200'
 
         print("----------------------------------")
         print("SETTING UP DATA FOR NEURAL NETWORK")
@@ -33,7 +33,7 @@ class parse_data():
                 pass
 
     def parse_labels(self):
-        DATADIR = '/home/aj/catkin_ws/src/forest+hallway_images'
+        DATADIR = '/home/aj/catkin_ws/src/images/forest_1200'
         count = 0
 
         for label in os.listdir(DATADIR):

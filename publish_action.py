@@ -6,7 +6,7 @@ from geometry_msgs.msg import Twist # message type for cmd_vel
 from sensor_msgs.msg import Image # message type for image
 from cv_bridge import CvBridge, CvBridgeError
 from parse_data import parse_data
-from ResNet_CPU import ResNet, block
+from ResNet import ResNet, block
 
 bridge = CvBridge()
 setup = parse_data()
@@ -17,7 +17,7 @@ num_classes = 2
 ResNet50 = ResNet(block, [3,4,6,3], img_channels, num_classes)
 
 ### MODEL PATH
-PATH = '/home/aj/catkin_ws/src/models/forest+hallway_ResNet50_lr_0.002_loss_weight_decay_0.5148.pt'
+PATH = '/home/aj/catkin_ws/src/models/forest_1200%40_ResNet50_lr_0.0015_wd_0.0015_loss_0.8037399729092916.pt'
 
 ### LOAD MODEL
 model = ResNet(block, [3,4,6,3], img_channels, num_classes)
@@ -34,7 +34,7 @@ class data_recorder(object):
         self.count = 0
         # Node for Subscriber/Publisher
         self.node = rospy.init_node('talker', anonymous=True)
-        self.img_left = rospy.Subscriber('/front/left/image_raw', Image, self.left_img_callback)
+        self.img_left = rospy.Subscriber('/d400/depth/image_rect_raw', Image, self.left_img_callback)
         self.pub = rospy.Publisher('/jackal_velocity_controller/cmd_vel', Twist, queue_size=10) # definging the publisher by topic, message type
         self.rate = rospy.Rate(10)
 
