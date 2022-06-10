@@ -15,7 +15,7 @@ class parse_data():
         self.batch_size = 0
 
     def parse_images(self):
-        DATADIR = '/home/vail/aj_ws/src/jackal/images/boxes' 
+        DATADIR = '/home/vail/aj_ws/src/images/boxes' 
 
         print("----------------------------------")
         print("SETTING UP DATA FOR NEURAL NETWORK")
@@ -33,7 +33,7 @@ class parse_data():
                 pass
 
     def parse_labels(self):
-        DATADIR = '/home/vail/aj_ws/src/jackal/images/boxes'
+        DATADIR = '/home/vail/aj_ws/src/images/boxes'
         count = 0
 
         for label in os.listdir(DATADIR):

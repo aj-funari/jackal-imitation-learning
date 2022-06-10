@@ -23,7 +23,7 @@ model = ResNet(block, [3,4,6,3], img_channels, num_classes)
 PATH = '/home/vail/aj_ws/src/jackal/models/boxes__1800%40_ResNet50_lr_0.002_wd_0.001_loss_0.8276655283239153.pt'
 model.load_state_dict(torch.load(PATH))
 model.eval()
-# model.to(torch.device('cuda'))
+model.to(torch.device('cuda'))
 
 class data_recorder(object):
 
@@ -58,10 +58,11 @@ class data_recorder(object):
         img_float32 = numpy.array(img_resize, dtype=numpy.float32)
         img_tensor = torch.from_numpy(img_float32)
         image = img_tensor.reshape(1, 3, 224, 224)
+        image = image / 255.0
         
         # move images to GPU
-        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # image = image.to(device)
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        image = image.to(device)
         
         # feed image through neural network
         tensor_out = model(image)
