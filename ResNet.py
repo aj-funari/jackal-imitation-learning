@@ -173,8 +173,8 @@ if __name__ == '__main__':
         output = net(input_batch)
 
     # ### CALL MODEL
-    learning_rate = 0.002
-    weight_decay = 0.001
+    learning_rate = 0.0015
+    weight_decay = 0.0015
 
     net = ResNet50(img_channels=3, num_classes=2)
     optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate, weight_decay=weight_decay)
@@ -191,7 +191,7 @@ if __name__ == '__main__':
             total_time = time.time()
             start_time = time.time()
             image = image.reshape(1, 3, 224, 224) # reshape into 3 dimensional RGB
-            image = image / 255.0
+            image = image / 255.0  # constrain pixel values to [0-1]
 
             ### FEED IMAGE THROUGH NEURAL NETWORK --> USES NOT RANDOMIZED LIST FIX!!!
             output = net(image)
@@ -243,7 +243,7 @@ if __name__ == '__main__':
 
     # print("FINISHED TRAINING NEURAL NETWORK!")
 
-    PATH = '/home/vail/aj_ws/src/jackal/models/boxes__1800%40_ResNet50_lr_0.002_wd_0.001_loss_' + str(filename_loss) + '.pt'
+    PATH = '/home/vail/aj_ws/src/jackal/models/boxes__1800%40_ResNet50_lr_0.0015_wd_0.0015_loss_' + str(filename_loss) + '.pt'
     torch.save(net.state_dict(), PATH)
     print("------------")
     print("MODEL SAVED!")
