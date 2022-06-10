@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import cv2
 import torch
 import rospy
+import numpy
 from geometry_msgs.msg import Twist # message type for cmd_vel
 from sensor_msgs.msg import Image # message type for image
 from cv_bridge import CvBridge, CvBridgeError
@@ -16,13 +18,12 @@ img_channels = 3
 num_classes = 2
 ResNet50 = ResNet(block, [3,4,6,3], img_channels, num_classes)
 
-### MODEL PATH
-PATH = '/home/aj/catkin_ws/src/models/forest_1200%40_ResNet50_lr_0.0015_wd_0.0015_loss_0.8037399729092916.pt'
-
 ### LOAD MODEL
 model = ResNet(block, [3,4,6,3], img_channels, num_classes)
+PATH = '/home/vail/aj_ws/src/jackal/models/boxes__1800%40_ResNet50_lr_0.002_wd_0.001_loss_0.8276655283239153.pt'
 model.load_state_dict(torch.load(PATH))
 model.eval()
+# model.to(torch.device('cuda'))
 
 class data_recorder(object):
 
@@ -39,23 +40,36 @@ class data_recorder(object):
         self.rate = rospy.Rate(10)
 
     def left_img_callback(self, image):
-        # print("I recieved an image!")
-        try:
-            # convert ROS Image message to OpenCV2
-            cv2_img = bridge.imgmsg_to_cv2(image, desired_encoding='rgb8')  # returns array
+        '''
+        Convert ROS Image message to OpenCV2 Image
+        
+        Because I am subscribing to depth camera for testing
+        I need to convert the subscribed image from grey scale
+        to RGB. Neural network only accepts RGB images. 
+        '''
+        
+        # try:
+        cv2_img = bridge.imgmsg_to_cv2(image)  # returns array
+        img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_GRAY2RGB)
+        print("Image received and converted to RGB!")
 
-            # resize image 
-            img_resize = setup.resize(cv2_img)
-            img_tensor = torch.from_numpy(img_resize)
-            img = img_tensor.reshape(1, 3, 224, 224)
-            
-            # feed image through neural network
-            tensor_out = model(img)
-            self.tensor_x_z_actions.append(tensor_out)
-            print("actions sent to publisher:", tensor_out)
+        # resize image 
+        img_resize = setup.resize(img_rgb)
+        img_float32 = numpy.array(img_resize, dtype=numpy.float32)
+        img_tensor = torch.from_numpy(img_float32)
+        image = img_tensor.reshape(1, 3, 224, 224)
+        
+        # move images to GPU
+        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # image = image.to(device)
+        
+        # feed image through neural network
+        tensor_out = model(image)
+        self.tensor_x_z_actions.append(tensor_out)
+        print(tensor_out)
 
-        except CvBridgeError as e:
-            pass
+        # except CvBridgeError as e:
+        #     pass
 
     def publishMethod(self):    
         i = 0
@@ -67,8 +81,8 @@ class data_recorder(object):
             else:
                 if len(self.tensor_x_z_actions) >= tmp:  # publish actions only when action is sent from neural network output
                     # print("x-z actions:", self.tensor_x_z_actions[i])
-                    move.linear.x = self.tensor_x_z_actions[i][0][0]
-                    move.linear.z = self.tensor_x_z_actions[i][0][1]
+                    move.linear.x = self.tensor_x_z_actions[i][0][0]/16
+                    move.linear.z = self.tensor_x_z_actions[i][0][1]/16
                     rospy.loginfo("Data is being sent") 
                     self.pub.publish(move)
                     self.rate.sleep()

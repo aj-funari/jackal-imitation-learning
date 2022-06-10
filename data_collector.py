@@ -46,7 +46,7 @@ class data_recorder(object):
         self.data = jackal_velocity  # subscribed to jackal velocity
 
         self.count += 1
-        directory = '/home/aj/catkin_ws/src/images/'
+        directory = '/home/vail/aj_ws/src/jackal/images/box_images'
         os.chdir(directory)
 
         cv2.imwrite(self.data, self.image)
