@@ -1,1 +1,1 @@
-# jackal
+# Jackal Imitation Learning
