@@ -1,5 +1,5 @@
 # Jackal Imitation Learning
-The purpose of this project is to control a a differential drive robot strictly using images.
+The purpose of this project is to explore control options a differential drive robot. Control inputs: RGB images, depth images, and LiDar.
 1) Data Collection
     - Collect images with labels {linear velocty, angular velocity}.timestep
     - Images are collected when manually controlling Jackal through simulated environment
